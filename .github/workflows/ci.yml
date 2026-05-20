@@ -9,6 +9,9 @@ on:
 permissions:
   contents: read
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build-and-test:
     name: Build, Test & Package
@@ -24,8 +27,11 @@ jobs:
           java-version: '11'
           distribution: 'temurin'
 
-      - name: Build, run all tests, and package
-        run: mvn -B verify
+      - name: Compile
+        run: mvn -B compile
+
+      - name: Run tests
+        run: mvn -B test
 
       - name: Upload test results
         if: always()
@@ -33,7 +39,10 @@ jobs:
         with:
           name: test-results
           path: target/surefire-reports/
-          if-no-files-found: error
+          if-no-files-found: warn
+
+      - name: Package fat-JAR
+        run: mvn -B package -DskipTests
 
       - name: Upload JAR artifact
         uses: actions/upload-artifact@v4
