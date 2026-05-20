@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ "main", "master" ]
 
+permissions:
+  contents: read
+
 jobs:
   build-and-test:
     name: Build, Test & Package
@@ -20,29 +23,23 @@ jobs:
         with:
           java-version: '11'
           distribution: 'temurin'
-          cache: maven
 
-      # ── Compile ──────────────────────────────────────────────────────────
       - name: Compile
-        run: mvn -B compile --file pom.xml
+        run: mvn -B compile
 
-      # ── Functional & Non-Functional Tests ────────────────────────────────
       - name: Run tests
-        run: mvn -B test --file pom.xml
+        run: mvn -B test
 
-      # ── Upload test report (always, so failures are visible) ──────────────
       - name: Upload test results
-        uses: actions/upload-artifact@v4
         if: always()
+        uses: actions/upload-artifact@v4
         with:
           name: test-results
           path: target/surefire-reports/
 
-      # ── Package (skip tests — already ran) ───────────────────────────────
       - name: Package fat-JAR
-        run: mvn -B package -DskipTests --file pom.xml
+        run: mvn -B package -DskipTests
 
-      # ── Upload runnable JAR as build artifact ─────────────────────────────
       - name: Upload JAR artifact
         uses: actions/upload-artifact@v4
         with:
